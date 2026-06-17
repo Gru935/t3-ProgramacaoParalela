@@ -8,8 +8,9 @@
 #
 #  USAGE (on atlantica, inside the repo directory):
 #     chmod +x run_atlantica.sh
-#     ./run_atlantica.sh                 # N = 1000000, 3 repetitions
-#     ./run_atlantica.sh 1000000 5       # custom size / repetitions
+#     ./run_atlantica.sh                       # tudo, N=1000000, 3 repeticoes
+#     ./run_atlantica.sh 1000000 5             # tamanho / repeticoes custom
+#     ./run_atlantica.sh 1000000 3 missing     # SO o que falta coletar (~25 min)
 #
 #  It (1) compiles both programs with ladcomp and (2) launches every case.
 # -----------------------------------------------------------------------------
@@ -29,6 +30,7 @@
 set -u
 SIZE=${1:-1000000}     # vector size (keep identical across ALL runs!)
 REPS=${2:-3}           # repetitions per case (report the median/best)
+MODE=${3:-full}        # full = todos os casos | missing = so o que falta coletar
 NODES=2                # 2 exclusive nodes, as required by the assignment
 
 UNBAL=mpi_bubblesort        # without load balancing
@@ -64,18 +66,34 @@ run() {
   printf "   (seconds)\n"
 }
 
-echo "=== Required cases: 1, 3, 7, 15, 31 (2 nodes; 31 uses HT) ==="
-for P in 1 3 7 15 31; do
-  run $UNBAL $P
-  run $BAL   $P
-done
+if [ "$MODE" = "missing" ]; then
+  # Coleta SO o que ainda falta, reaproveitando o que ja existe:
+  #  - P=1: reutilize o T(1)=3278s do desbalanceado (o balanceado em P=1 e identico);
+  #  - desbalanceado 3..127: voces ja tem no graficos.ods;
+  #  => roda balanceado 3..1023 + desbalanceado 255/511/1023. (~25 min, nao ~7h)
+  echo "=== MODE=missing: balanceado 3..1023 + desbalanceado 255/511/1023 ==="
+  echo "    (P=1 reutiliza 3278s; desbalanceado 1..127 voces ja tem)"
+  for P in 3 7 15 31 63 127; do
+    run $BAL $P
+  done
+  for P in 255 511 1023; do
+    run $UNBAL $P
+    run $BAL   $P
+  done
+else
+  echo "=== Required cases: 1, 3, 7, 15, 31 (2 nodes; 31 uses HT) ==="
+  for P in 1 3 7 15 31; do
+    run $UNBAL $P
+    run $BAL   $P
+  done
 
-echo
-echo "=== Scaling cases: 63, 127, 255, 511, 1023 (2 nodes, --overcommit) ==="
-for P in 63 127 255 511 1023; do
-  run $UNBAL $P
-  run $BAL   $P
-done
+  echo
+  echo "=== Scaling cases: 63, 127, 255, 511, 1023 (2 nodes, --overcommit) ==="
+  for P in 63 127 255 511 1023; do
+    run $UNBAL $P
+    run $BAL   $P
+  done
+fi
 
 echo
 echo "All runs finished. Plug the elapsed times into graficos.ods."
