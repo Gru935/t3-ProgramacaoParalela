@@ -13,3 +13,9 @@ upc_hybrid_mergesort
 upc_mergesort
 upc_no_copy_mergesort
 mpi_bubblesort
+bubble_bal
+bubble_bal_log
+bubble_unbal_log
+*.err
+*.dSYM/
+*.o
