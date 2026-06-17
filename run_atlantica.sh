@@ -37,8 +37,8 @@ UNBAL=mpi_bubblesort        # without load balancing
 BAL=bubble_bal              # with load balancing
 
 echo "### Compiling with ladcomp ..."
-ladcomp -env mpicc mpi_bubblesort.c          get_time.c -o $UNBAL -lm || exit 1
-ladcomp -env mpicc mpi_bubblesort_balanced.c get_time.c -o $BAL   -lm || exit 1
+ladcomp -env mpicc -O3 mpi_bubblesort.c          get_time.c -o $UNBAL -lm || exit 1
+ladcomp -env mpicc -O3 mpi_bubblesort_balanced.c get_time.c -o $BAL   -lm || exit 1
 echo "### Done. SIZE=$SIZE  REPS=$REPS"
 echo
 
