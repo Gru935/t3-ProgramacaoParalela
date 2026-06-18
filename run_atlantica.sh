@@ -71,11 +71,19 @@ if [ "$MODE" = "missing" ]; then
   #  - P=1: reutilize o T(1)=3278s do desbalanceado (o balanceado em P=1 e identico);
   #  - desbalanceado 3..127: voces ja tem no graficos.ods;
   #  => roda balanceado 3..1023 + desbalanceado 255/511/1023. (~25 min, nao ~7h)
-  echo "=== MODE=missing: balanceado 3..1023 + desbalanceado 255/511/1023 ==="
-  echo "    (P=1 reutiliza 3278s; desbalanceado 1..127 voces ja tem)"
+  echo "=== MODE=missing (-O3): valida sobreposicao + coleta o que falta ==="
+  echo "    (P=1 reutiliza 3278s; balanceado P=1 e identico ao desbalanceado)"
+  # (a) Re-mede o DESBALANCEADO em pontos que o Gru ja tem: serve para
+  #     confirmar que os dois conjuntos de dados sao comparaveis.
+  #     Esperado ~  15:104s   31:26s   63:8.5s   127:2.7s
+  for P in 15 31 63 127; do
+    run $UNBAL $P
+  done
+  # (b) Coluna BALANCEADA que faltava (3..127):
   for P in 3 7 15 31 63 127; do
     run $BAL $P
   done
+  # (c) Casos grandes nas duas versoes (oversubscribed em 2 nos):
   for P in 255 511 1023; do
     run $UNBAL $P
     run $BAL   $P
