@@ -88,6 +88,14 @@ if [ "$MODE" = "missing" ]; then
     run $UNBAL $P
     run $BAL   $P
   done
+elif [ "$MODE" = "lowend" ]; then
+  # Completa o conjunto consistente (2 nos, -O3): falta a base P=1 e o
+  # desbalanceado em P=3 e P=7 (o balanceado 3..1023 ja foi coletado).
+  # P=1 e o baseline T(1) e vale para as DUAS versoes (sao identicas em P=1).
+  echo "=== MODE=lowend (-O3, 2 nos): baseline P=1 (1x) + desbalanceado 3, 7 ==="
+  ( REPS=1; run $UNBAL 1 )   # baseline: 1 repeticao (ordenacao deterministica)
+  run $UNBAL 3
+  run $UNBAL 7
 else
   echo "=== Required cases: 1, 3, 7, 15, 31 (2 nodes; 31 uses HT) ==="
   for P in 1 3 7 15 31; do
