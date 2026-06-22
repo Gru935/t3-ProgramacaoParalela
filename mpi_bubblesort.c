@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     // Set test data
     if (my_rank == 0)
     { // Only root process sets test data
-        puts("-MPI Recursive Mergesort-\t");
+        puts("-MPI Bubble Sort (divide and conquer, UNBALANCED)-\t");
         // Check arguments
         if (argc != 2) /* argc must be 2 for proper execution! */
         {
@@ -164,9 +164,17 @@ void mergesort_parallel_mpi(int a[], int size, int temp[],
 {
     int helper_rank = my_rank + pow(2, level);
     if (helper_rank > max_rank)
-    { // no more processes available
-        // mergesort_serial(a, size, temp);
+    { // no more processes available: conquer this leaf with bubble sort
+#ifdef BALANCE_LOG
+        // Per-process load report (compile with -DBALANCE_LOG) for the
+        // load-balancing analysis across the different tree levels.
+        double t0 = get_time();
         bubble_sort(a, size);
+        fprintf(stderr, "BALANCE rank=%d level=%d leaf=%d sort_time=%.3f\n",
+                my_rank, level, size, get_time() - t0);
+#else
+        bubble_sort(a, size);
+#endif
     }
     else
     {
